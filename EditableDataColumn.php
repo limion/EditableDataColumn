@@ -20,7 +20,7 @@ class EditableDataColumn extends CDataColumn {
     
     public $inputHtmlOptions = array();
     
-    public $varSuffix = 'List';
+    public $varSuffix = '';
     
     public $idAttribute = 'id';
     
@@ -91,59 +91,71 @@ class EditableDataColumn extends CDataColumn {
         ));
         if ($this->htmlBeforeInput && is_string($this->htmlBeforeInput))
             echo $this->evaluateExpression($this->htmlBeforeInput,array('data'=>$data,'row'=>$row));
-        switch($this->inputType) {
-            case 'number':
-                $inputHtmlOptions = array_merge($inputHtmlOptions,array(
-                    'type'=>'number',
-                    'name'=> $name,
-                    'value' => $value
-                ));
-                echo CHtml::tag('input',$inputHtmlOptions,'',false);
-            break;
-        
-            case 'textarea':
-                echo CHtml::textArea($name, $value, $inputHtmlOptions);
-            break; 
-        
-            case 'select':
-                $listData = is_string($this->listData) ? 
-                    $this->evaluateExpression($this->listData,array('data'=>$data,'row'=>$row)) :
-                    $this->listData;
-                echo CHtml::dropDownList($name, $value, $listData,$inputHtmlOptions);
-            break;  
-        
-            case 'checkbox':
-                $listData = is_string($this->listData) ? 
-                    $this->evaluateExpression($this->listData,array('data'=>$data,'row'=>$row)) :
-                    $this->listData;
-                echo CHtml::checkBox($name, $value, $inputHtmlOptions);
-            break;  
-            
-            case 'checkboxlist':
-                $listData = is_string($this->listData) ? 
-                    $this->evaluateExpression($this->listData,array('data'=>$data,'row'=>$row)) :
-                    $this->listData;
-                echo CHtml::checkBoxList($name, $value, $listData,$inputHtmlOptions);
-            break;  
-        
-            case 'radiobuttonlist':
-                $listData = is_string($this->listData) ? 
-                    $this->evaluateExpression($this->listData,array('data'=>$data,'row'=>$row)) :
-                    $this->listData;
-                echo CHtml::radioButtonList($name, $value, $listData,$inputHtmlOptions);
-            break; 
-        
-            case 'display':
-                echo $value;
-            break; 
-        
-            case 'file':
-                echo CHtml::fileField($name, $value, $inputHtmlOptions);
-            break;    
-        
-            // TODO date,time,datetime
-            default:
-                echo CHtml::textField($name, $value, $inputHtmlOptions);
+        if (is_array($this->inputType)) {
+            //extension
+            $config = $this->inputType;
+            $class = $config['class'];
+            unset($config['class']);
+            $config = array_merge($config,array(
+                'name'=>$name,
+                'value'=>$value,
+            ));
+            $this->grid->controller->widget($class,$config);
+        }
+        else {
+            switch($this->inputType) {
+                case 'number':
+                    $inputHtmlOptions = array_merge($inputHtmlOptions,array(
+                        'type'=>'number',
+                        'name'=> $name,
+                        'value' => $value
+                    ));
+                    echo CHtml::tag('input',$inputHtmlOptions,'',false);
+                break;
+
+                case 'textarea':
+                    echo CHtml::textArea($name, $value, $inputHtmlOptions);
+                break; 
+
+                case 'select':
+                    $listData = is_string($this->listData) ? 
+                        $this->evaluateExpression($this->listData,array('data'=>$data,'row'=>$row)) :
+                        $this->listData;
+                    echo CHtml::dropDownList($name, $value, $listData,$inputHtmlOptions);
+                break;  
+
+                case 'checkbox':
+                    $listData = is_string($this->listData) ? 
+                        $this->evaluateExpression($this->listData,array('data'=>$data,'row'=>$row)) :
+                        $this->listData;
+                    echo CHtml::checkBox($name, $value, $inputHtmlOptions);
+                break;  
+
+                case 'checkboxlist':
+                    $listData = is_string($this->listData) ? 
+                        $this->evaluateExpression($this->listData,array('data'=>$data,'row'=>$row)) :
+                        $this->listData;
+                    echo CHtml::checkBoxList($name, $value, $listData,$inputHtmlOptions);
+                break;  
+
+                case 'radiobuttonlist':
+                    $listData = is_string($this->listData) ? 
+                        $this->evaluateExpression($this->listData,array('data'=>$data,'row'=>$row)) :
+                        $this->listData;
+                    echo CHtml::radioButtonList($name, $value, $listData,$inputHtmlOptions);
+                break; 
+
+                case 'display':
+                    echo $value;
+                break; 
+
+                case 'file':
+                    echo CHtml::fileField($name, $value, $inputHtmlOptions);
+                break;    
+
+                default:
+                    echo CHtml::textField($name, $value, $inputHtmlOptions);
+            }
         }
         if ($this->htmlAfterInput && is_string($this->htmlAfterInput))
             echo $this->evaluateExpression($this->htmlAfterInput,array('data'=>$data,'row'=>$row));
