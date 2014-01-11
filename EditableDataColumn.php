@@ -56,7 +56,7 @@ class EditableDataColumn extends CDataColumn {
         list($data,$attr) = $this->resolveData($data);
         // input name
         if (is_object($data)) {
-            $postVar = get_class($data).$this->varSuffix;
+            $postVar = CHtml::modelName($data).$this->varSuffix;
             $this->_isActiveRecord = true;
         }
         else 
@@ -128,6 +128,8 @@ class EditableDataColumn extends CDataColumn {
                     $listData = is_string($this->listData) ? 
                         $this->evaluateExpression($this->listData,array('data'=>$data,'row'=>$row)) :
                         $this->listData;
+                    if(!isset($inputHtmlOptions['uncheckValue']))
+                        $inputHtmlOptions['uncheckValue'] = 0;
                     echo CHtml::checkBox($name, $value, $inputHtmlOptions);
                 break;  
 
@@ -135,6 +137,8 @@ class EditableDataColumn extends CDataColumn {
                     $listData = is_string($this->listData) ? 
                         $this->evaluateExpression($this->listData,array('data'=>$data,'row'=>$row)) :
                         $this->listData;
+                    if(!isset($inputHtmlOptions['uncheckValue']))
+                        $inputHtmlOptions['uncheckValue'] = 0;
                     echo CHtml::checkBoxList($name, $value, $listData,$inputHtmlOptions);
                 break;  
 
@@ -151,7 +155,10 @@ class EditableDataColumn extends CDataColumn {
 
                 case 'file':
                     echo CHtml::fileField($name, $value, $inputHtmlOptions);
-                break;    
+                break; 
+            
+                case 'none':
+                break;
 
                 default:
                     echo CHtml::textField($name, $value, $inputHtmlOptions);
