@@ -12,24 +12,77 @@ Yii::import('zii.widgets.grid.CDataColumn');
 
 class EditableDataColumn extends CDataColumn {
     
+    /**
+     * @var string|array the type for the input cell. Available types are:
+     * 1) "text"(default), "number", "textarea", "select", "checkbox", "checkboxlist", "radiobattonlist", "file" 
+     * (They produce a corresponding <input type='...'> tag)
+     * 2) "display" - just displays the cell value, 
+     *    "none" - displays nothing
+     * 3) configuration array for the input widget, for example:
+     *    'inputType'=>array(
+     *       'class'=>'ext.jqSpinner.jqSpinnerWidget', // 'class' is a obligatory parameter
+     *       'htmlOptions'=>array(                     // widget config 
+     *           'style'=>'width: 65px;',               
+     *       ),                                         
+     *       'options'=>array(
+     *           'step'=>1,
+     *       )                                         //
+     *   ),
+     * 
+     */
     public $inputType = 'text';
     
+    /**
+     * @var string a PHP expression that is evaluated for every data cell using {@link evaluateExpression}
+     * and whose result is used to define the type for the input cell.
+     * Therefore in one table column could be presented a different types of inputs.
+     * In expression, you can use the same variables as for CDataColumn ($row,$data and $this) 
+     */
     public $inputTypeExpression;
     
-    public $listData = array();
+    /**
+     * @var array|string an array or a PHP expression that is evaluated for every data cell using {@link evaluateExpression} 
+     * and whose result is used to get an array of data for the input types: "select","checkboxlist","radiobuttonlist".
+     * This array will be used as $data parameter for the corresponding CHtml method (for example: CHtml::dropDownList(...,...,$data,...)) 
+     * In expression, you can use the same variables as for CDataColumn ($row,$data and $this)
+     */
+    public $listData;
     
+    /**
+     * @var array the HTML options for the input tag.
+     */
     public $inputHtmlOptions = array();
     
+    /**
+     * @var string the suffix which will be added to the input name
+     */
     public $varSuffix = '';
     
+    /**
+     * @var string the attribute name that contains the primary key for the corresponding data model. Default is 'id'.
+     */
     public $idAttribute = 'id';
     
+    /**
+     * @var string the inline styles which will be applied to input tag in case of validation error
+     */
     public $errorStyle = '';
     
+    /**
+     * @var string the css class which will be applied to input tag in case of validation error
+     */
     public $errorClass = 'error';
     
+    /**
+     * @var string a PHP expression that is evaluated for every data cell using {@link evaluateExpression}
+     * and whose result is used to add and additional HTML before input tag
+     */
     public $htmlBeforeInput;
     
+    /**
+     * @var string a PHP expression that is evaluated for every data cell using {@link evaluateExpression}
+     * and whose result is used to add and additional HTML after input tag
+     */
     public $htmlAfterInput;
     
     protected $_isActiveRecord = false;
@@ -38,6 +91,7 @@ class EditableDataColumn extends CDataColumn {
 		parent::init();
         if($this->name===null)
 			throw new CException(Yii::t('editabledatacolumn','"name" must be specified for EditableDataColumn.'));
+        
         if (!is_array($this->inputHtmlOptions)) {
             $this->inputHtmlOptions = array($this->inputHtmlOptions);
         }
@@ -91,6 +145,7 @@ class EditableDataColumn extends CDataColumn {
         ));
         if ($this->htmlBeforeInput && is_string($this->htmlBeforeInput))
             echo $this->evaluateExpression($this->htmlBeforeInput,array('data'=>$data,'row'=>$row));
+        
         if (is_array($this->inputType)) {
             //extension
             $config = $this->inputType;
@@ -125,9 +180,6 @@ class EditableDataColumn extends CDataColumn {
                 break;  
 
                 case 'checkbox':
-                    $listData = is_string($this->listData) ? 
-                        $this->evaluateExpression($this->listData,array('data'=>$data,'row'=>$row)) :
-                        $this->listData;
                     if(!isset($inputHtmlOptions['uncheckValue']))
                         $inputHtmlOptions['uncheckValue'] = 0;
                     echo CHtml::checkBox($name, $value, $inputHtmlOptions);
@@ -149,12 +201,12 @@ class EditableDataColumn extends CDataColumn {
                     echo CHtml::radioButtonList($name, $value, $listData,$inputHtmlOptions);
                 break; 
 
-                case 'display':
-                    echo $value;
-                break; 
-
                 case 'file':
                     echo CHtml::fileField($name, $value, $inputHtmlOptions);
+                break; 
+            
+                case 'display':
+                    echo $value;
                 break; 
             
                 case 'none':
